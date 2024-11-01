@@ -26,7 +26,7 @@ class SectionResource extends Resource
     {
         return $form
             ->schema([
-                TextInput::make('name'),
+                TextInput::make('name')->required()->autofocus(),
                 Select::make('class_id')
                     ->relationship(name: 'class', titleAttribute: 'name')
                     ->preload()

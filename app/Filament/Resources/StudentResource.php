@@ -4,11 +4,16 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\StudentResource\Pages;
 use App\Filament\Resources\StudentResource\RelationManagers;
+use App\Models\Section;
 use App\Models\Student;
 use Filament\Forms;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -23,11 +28,20 @@ class StudentResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name'),
-                Forms\Components\TextInput::make('email'),
-                Forms\Components\TextInput::make('class_id') ->relationship(name: 'class', titleAttribute: 'name'),
-                Forms\Components\TextInput::make('section_id') ->relationship(name: 'section', titleAttribute: 'name'),
+               TextInput::make('name')->required()->autofocus(),
+               TextInput::make('email')->required()->unique(),
+               select::make('class_id')
+                    ->relationship(name: 'class', titleAttribute: 'name')
+                    ->live(),
+               select::make('section_id')
+                    ->label('Section')
+                    ->options(function (Get $get) {
+                        $ClassId = $get('class_id');
 
+                        if ($ClassId) {
+                            return Section::where('class_id', $ClassId)->get()->pluck('name', 'id');
+                        }
+                    })
             ]);
     }
 
@@ -35,10 +49,10 @@ class StudentResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')->searchable()->sortable(),
-                Tables\Columns\TextColumn::make('email')->searchable()->sortable(),
-                Tables\Columns\TextColumn::make('class.name')->badge()->color('success')->searchable(),
-                Tables\Columns\TextColumn::make('section.name')->badge()->color('info')->searchable(),
+                TextColumn::make('name')->searchable()->sortable(),
+                TextColumn::make('email')->searchable()->sortable(),
+                TextColumn::make('class.name')->badge()->color('success')->searchable(),
+                TextColumn::make('section.name')->badge()->color('info')->searchable(),
 
             ])
             ->filters([
