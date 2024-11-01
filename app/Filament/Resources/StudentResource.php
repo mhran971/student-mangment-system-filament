@@ -2,11 +2,12 @@
 
 namespace App\Filament\Resources;
 
+use App\Exports\StudentsExport;
 use App\Filament\Resources\StudentResource\Pages;
 use App\Filament\Resources\StudentResource\RelationManagers;
+use App\Models\Classes;
 use App\Models\Section;
 use App\Models\Student;
-use Filament\Forms;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -14,9 +15,12 @@ use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
+use Illuminate\Support\Collection;
+use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpSpreadsheet\Calculation\LookupRef\Selection;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class StudentResource extends Resource
 {
@@ -56,8 +60,34 @@ class StudentResource extends Resource
 
             ])
             ->filters([
-                //
+                Filter::make('class-section-filter')
+                ->form([
+                    Select::make('class_id')
+                    ->label('Filter By class')
+                    ->placeholder('Select a class')
+                    ->options(
+                        Classes::pluck('name','id')->toArray())
+                ,
+                    Select::make('section_id')
+                        ->label('Filter By Section')
+                        ->placeholder('select a Section')
+                        ->options(function (Get $get){
+
+                            $classId = $get('class_id');
+                            if($classId){
+                                return Section::where('class_id',$classId)->pluck('name','id');
+                            }
+                        }),
+                        ])
+                ->query(function (Builder $query,array $data): Builder {
+                 return $query->when($data['class_id'],function ($query) use ($data){
+                     return $query->where('class_id',$data['class_id']);
+                 })->when($data['section_id'],function ($query) use ($data){
+                     return $query->where('section_id',$data['section_id']);
+                 });
+                }),
             ])
+
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
@@ -65,6 +95,13 @@ class StudentResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+
+                    Tables\Actions\BulkAction::make('export')
+                        ->label('Export to Excel')
+                        ->icon('heroicon-o-document-arrow-down')
+                        ->action(function (Collection $records) {
+                            return Excel::download(new StudentsExport($records), 'Students.xlsx');
+                        })
                 ]),
             ]);
     }
