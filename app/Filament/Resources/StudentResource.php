@@ -25,9 +25,14 @@ use Illuminate\Database\Eloquent\Builder;
 class StudentResource extends Resource
 {
     protected static ?string $model = Student::class;
+    protected static ?string $navigationGroup = "Academic Mangement"  ;
+    protected static ?string $activeNavigationIcon = "heroicon-o-academic-cap";
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-
+    public static function getNavigationBadge(): ?string
+    {
+        return Student::count();
+    }
     public static function form(Form $form): Form
     {
         return $form
@@ -91,8 +96,13 @@ class StudentResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
-            ])
-            ->bulkActions([
+                Tables\Actions\Action::make('downloadPdf')
+                ->url(function (Student $student){
+                    return route('student.invoice.generate',$student);
+                }),
+
+                ])
+    ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
 

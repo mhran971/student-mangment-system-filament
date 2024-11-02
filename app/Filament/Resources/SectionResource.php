@@ -2,11 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Exports\StudentsExport;
 use App\Filament\Resources\SectionResource\Pages;
 use App\Filament\Resources\SectionResource\RelationManagers;
 use App\Models\Section;
-use Filament\Forms;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -19,14 +17,18 @@ use Filament\Tables\Table;
 class SectionResource extends Resource
 {
     protected static ?string $model = Section::class;
+    protected static ?string $navigationGroup = "Academic Mangement"  ;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'uni-web-section-thin' ;
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                TextInput::make('name')->required()->autofocus(),
+                TextInput::make('name')
+                    ->required()
+                    ->autofocus()
+                    ->unique(),
                 Select::make('class_id')
                     ->relationship(name: 'class', titleAttribute: 'name')
                     ->preload()

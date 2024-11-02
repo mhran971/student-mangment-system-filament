@@ -17,6 +17,7 @@ use Filament\Tables\Table;
 class ClassesResource extends Resource
 {
     protected static ?string $model = Classes::class;
+    protected static ?string $navigationGroup = "Academic Mangement"  ;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
@@ -24,7 +25,10 @@ class ClassesResource extends Resource
     {
         return $form
             ->schema([
-                TextInput::make('name')->required()->autofocus(),
+                TextInput::make('name')
+                    ->required()
+                    ->autofocus()
+                    ->unique(),
 
                 ]);
     }
