@@ -97,8 +97,14 @@ class StudentResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
                 Tables\Actions\Action::make('downloadPdf')
+                ->button()->color('warning')
                 ->url(function (Student $student){
                     return route('student.invoice.generate',$student);
+                }),
+                Tables\Actions\Action::make('QrCode')
+                ->button()->color('success')
+                ->url(function (Student $record){
+                    return static::getUrl('qrcode',['record'=>$record]);
                 }),
 
                 ])
@@ -129,6 +135,8 @@ class StudentResource extends Resource
             'index' => Pages\ListStudents::route('/'),
             'create' => Pages\CreateStudent::route('/create'),
             'edit' => Pages\EditStudent::route('/{record}/edit'),
+            'qrcode' => Pages\GenerateQrCode::route('/{record}/qrcode'),
+
         ];
     }
 }
