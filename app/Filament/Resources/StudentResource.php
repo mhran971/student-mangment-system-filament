@@ -50,7 +50,8 @@ class StudentResource extends Resource
                         if ($ClassId) {
                             return Section::where('class_id', $ClassId)->get()->pluck('name', 'id');
                         }
-                    })
+                    }),
+                TextInput::make('password')->password()->required()
             ]);
     }
 
@@ -102,7 +103,7 @@ class StudentResource extends Resource
                     return route('student.invoice.generate',$student);
                 }),
                 Tables\Actions\Action::make('QrCode')
-                ->button()->color('success')
+                 ->button()->color('success')
                 ->url(function (Student $record){
                     return static::getUrl('qrcode',['record'=>$record]);
                 }),
